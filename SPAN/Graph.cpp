@@ -9,7 +9,7 @@ Graph::Graph(string inputFileName)
 
     if (!inputFile)
     {
-        cout << "Error: Dictionary file could not be opened!" << endl;
+        cout << "Error: Input file could not be opened!" << endl;
         exit(0);
     }
 
@@ -75,21 +75,45 @@ Graph::Graph(string inputFileName)
 
     this->edges = edges;
     this->edgeCount = edgeCount;
-    
-    // TODO: consider using ints everywhere for referencing verts until printing the result at the end
-    // TODO: redo sets with an array of linked lists
+
 }
 
-void Graph::getMSTKruskal()
+void Graph::displayMSTKruskal()
 {
     edge** result = new edge*[edgeCount];
+    int totalWeight = 0;
+    int numEdgesFound = 0;
+    MSTKruskal(result, totalWeight, numEdgesFound);
 
+    cout << totalWeight << endl;
+    for (int i = 0; i < numEdgesFound; i++)
+    {
+        edge* currentEdge = result[i];
+        cout << currentEdge->u << "-" << currentEdge->v << ": " << getEdgeWeight(currentEdge->u, currentEdge->v) << endl;
+    }
+
+
+}
+
+int Graph::getVertIndex(string vertName)
+{
     for (int i = 0; i < vertCount; i++)
     {
-        string vert = verts[i];
-        makeSet(vert);
+        if (verts[i] == vertName)
+            return i;
     }
-    
+    return -1;
+}
+
+int Graph::getEdgeWeight(string u, string v)
+{
+    return weights[getVertIndex(u)][getVertIndex(v)];
+}
+
+void Graph::MSTKruskal(edge** result, int& totalWeight, int& numEdgesFound)
+{
+    for (int i = 0; i < vertCount; i++)
+        makeSet(verts[i]);
     
     Graph::MinPriorityQueue* queue = new Graph::MinPriorityQueue(14);
     for (int i = 0; i < edgeCount; i++)
@@ -99,10 +123,6 @@ void Graph::getMSTKruskal()
         queue->insert(currentEdge);
     }
     
-    //queue->debugDisplay();
-    
-    int numEdgesFound = 0;
-    int totalWeight = 0;
     for (int i = 0; i < edgeCount; i++)
     {
         edge* currentEdge = queue->extractMin();
@@ -116,7 +136,6 @@ void Graph::getMSTKruskal()
         }
     }
 
-    cout << totalWeight << endl;
 
     for (int j = 1; j < numEdgesFound; j++)
     {
@@ -141,29 +160,6 @@ void Graph::getMSTKruskal()
         }
         result[i + 1] = key;
     }
-
-    for (int i = 0; i < numEdgesFound; i++)
-    {
-        edge* currentEdge = result[i];
-        cout << currentEdge->u << "-" << currentEdge->v << ": " << getEdgeWeight(currentEdge->u, currentEdge->v) << endl;
-    }
-
-
-}
-
-int Graph::getVertIndex(string vertName)
-{
-    for (int i = 0; i < vertCount; i++)
-    {
-        if (verts[i] == vertName)
-            return i;
-    }
-    return -1;
-}
-
-int Graph::getEdgeWeight(string u, string v)
-{
-    return weights[getVertIndex(u)][getVertIndex(v)];
 }
 
 void Graph::makeSet(string vert)

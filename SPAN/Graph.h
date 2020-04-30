@@ -5,7 +5,7 @@ class Graph
 {
 public:
 	Graph(string inputFileName);
-	void getMSTKruskal();
+	void displayMSTKruskal();
 
 
 
@@ -53,7 +53,7 @@ private:
 	int getVertIndex(string vertName);
 	int getEdgeWeight(string u, string v);
 	
-	Graph::edge* MSTKruskal(string* verts);
+	void MSTKruskal(edge** edges, int& totalWeight, int& totalEdges);
 	void makeSet(string vert);
 	int findSet(string vert);
 	void unionSet(string u, string v);
