@@ -24,11 +24,11 @@ Graph::Graph(string inputFileName)
     }
 
     //cout << nodeCount << endl;
-    int** weights = new int*[nodeCount];
-    int weight;
+    double** weights = new double*[nodeCount];
+    double weight;
     for (int i = 0; i < nodeCount; i++) // process input matrix rows
     {
-        int* vert_row = new int[nodeCount];
+        double* vert_row = new double[nodeCount];
         for (int j = 0; j < nodeCount; j++) // process input matrix columns
         {
             inputFile >> weight;
@@ -68,7 +68,6 @@ Graph::Graph(string inputFileName)
 
             edges[edgeCount++] = newEdge;
 
-            
         }
 
     }
@@ -81,7 +80,7 @@ Graph::Graph(string inputFileName)
 void Graph::displayMSTKruskal()
 {
     edge** result = new edge*[edgeCount];
-    int totalWeight = 0;
+    double totalWeight = 0;
     int numEdgesFound = 0;
     MSTKruskal(result, totalWeight, numEdgesFound);
 
@@ -91,7 +90,6 @@ void Graph::displayMSTKruskal()
         edge* currentEdge = result[i];
         cout << currentEdge->u << "-" << currentEdge->v << ": " << getEdgeWeight(currentEdge->u, currentEdge->v) << endl;
     }
-
 
 }
 
@@ -105,12 +103,12 @@ int Graph::getVertIndex(string vertName)
     return -1;
 }
 
-int Graph::getEdgeWeight(string u, string v)
+double Graph::getEdgeWeight(string u, string v)
 {
     return weights[getVertIndex(u)][getVertIndex(v)];
 }
 
-void Graph::MSTKruskal(edge** result, int& totalWeight, int& numEdgesFound)
+void Graph::MSTKruskal(edge** result, double& totalWeight, int& numEdgesFound)
 {
     for (int i = 0; i < vertCount; i++)
         makeSet(verts[i]);

@@ -22,7 +22,7 @@ private:
 	{
 		string u;
 		string v;
-		int weight;
+		double weight;
 	};
 
 	class MinPriorityQueue
@@ -46,14 +46,14 @@ private:
 	int vertCount;
 	int edgeCount;
 	string* verts;
-	int** weights;
+	double** weights;
 	setNode** sets;
 	edge** edges;
 
 	int getVertIndex(string vertName);
-	int getEdgeWeight(string u, string v);
+	double getEdgeWeight(string u, string v);
 	
-	void MSTKruskal(edge** edges, int& totalWeight, int& totalEdges);
+	void MSTKruskal(edge** edges, double& totalWeight, int& totalEdges);
 	void makeSet(string vert);
 	int findSet(string vert);
 	void unionSet(string u, string v);
