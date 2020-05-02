@@ -47,7 +47,7 @@ Graph::Graph(string inputFileName)
     this->sets = sets;
 
     int maxNumEdges = (nodeCount * nodeCount - nodeCount) / 2;
-    edge** edges = new edge*[maxNumEdges];
+    graphNode** edges = new graphNode*[maxNumEdges];
 
     int edgeCount = 0;
     for (int i = 0; i < this->vertCount; i++)
@@ -61,10 +61,10 @@ Graph::Graph(string inputFileName)
             if (uVert >= vVert || !weight)
                 continue;        
 
-            edge* newEdge = new edge();
+            graphNode* newEdge = new graphNode();
             newEdge->u = uVert;
             newEdge->v = vVert;
-            newEdge->weight = weight;
+            newEdge->key = weight;
 
             edges[edgeCount++] = newEdge;
 
@@ -79,18 +79,82 @@ Graph::Graph(string inputFileName)
 
 void Graph::displayMSTKruskal()
 {
-    edge** result = new edge*[edgeCount];
+    graphNode** result = new graphNode*[edgeCount];
     double totalWeight = 0;
     int numEdgesFound = 0;
     MSTKruskal(result, totalWeight, numEdgesFound);
 
+    for (int j = 1; j < numEdgesFound; j++)
+    {
+        graphNode* key = result[j];
+        int i = j - 1;
+        while (i >= 0 && result[i]->v > key->v)
+        {
+            result[i + 1] = result[i];
+            i = i - 1;
+        }
+        result[i + 1] = key;
+    }
+
+    for (int j = 1; j < numEdgesFound; j++)
+    {
+        graphNode* key = result[j];
+        int i = j - 1;
+        while (i >= 0 && result[i]->u > key->u)
+        {
+            result[i + 1] = result[i];
+            i = i - 1;
+        }
+        result[i + 1] = key;
+    }
+
     cout << totalWeight << endl;
     for (int i = 0; i < numEdgesFound; i++)
     {
-        edge* currentEdge = result[i];
+        graphNode* currentEdge = result[i];
         cout << currentEdge->u << "-" << currentEdge->v << ": " << getEdgeWeight(currentEdge->u, currentEdge->v) << endl;
     }
 
+}
+
+void Graph::displayMSTPrim()
+{
+    graphNode** result = new graphNode * [vertCount];
+
+    double totalWeight = 0;
+    int numEdgesFound = 0;
+    MSTPrim(result, totalWeight, numEdgesFound);
+    
+    for (int j = 1; j < numEdgesFound; j++)
+    {
+        graphNode* key = result[j];
+        int i = j - 1;
+        while (i >= 0 && result[i]->v > key->v)
+        {
+            result[i + 1] = result[i];
+            i = i - 1;
+        }
+        result[i + 1] = key;
+    }
+
+    for (int j = 1; j < numEdgesFound; j++)
+    {
+        graphNode* key = result[j];
+        int i = j - 1;
+        while (i >= 0 && result[i]->u > key->u)
+        {
+            result[i + 1] = result[i];
+            i = i - 1;
+        }
+        result[i + 1] = key;
+    }
+
+    cout << totalWeight << endl;
+    for (int i = 0; i < numEdgesFound; i++)
+    {
+        graphNode* currentEdge = result[i];
+        cout << currentEdge->u << "-" << currentEdge->v << ": " << getEdgeWeight(currentEdge->u, currentEdge->v) << endl;
+    }
 }
 
 int Graph::getVertIndex(string vertName)
@@ -108,22 +172,36 @@ double Graph::getEdgeWeight(string u, string v)
     return weights[getVertIndex(u)][getVertIndex(v)];
 }
 
-void Graph::MSTKruskal(edge** result, double& totalWeight, int& numEdgesFound)
+string* Graph::get_adjacent(string v, int& count)
+{
+    string* result = new string[vertCount];
+    int column = getVertIndex(v);
+    for (int i = 0; i < vertCount; i++)
+    {
+        if (weights[i][column] > 0)
+        {
+            result[count++] = verts[i];
+        }
+    }
+    return result;
+}
+
+void Graph::MSTKruskal(graphNode** result, double& totalWeight, int& numEdgesFound)
 {
     for (int i = 0; i < vertCount; i++)
         makeSet(verts[i]);
     
-    Graph::MinPriorityQueue* queue = new Graph::MinPriorityQueue(14);
+    Graph::MinPriorityQueue* queue = new Graph::MinPriorityQueue(edgeCount);
     for (int i = 0; i < edgeCount; i++)
     {
-        edge* currentEdge = edges[i];
+        graphNode* currentEdge = edges[i];
         //cout << "INSERT EDGE " << i << " = " << currentEdge->u << "-" << currentEdge->v << " " << currentEdge->weight << endl;
         queue->insert(currentEdge);
     }
     
     for (int i = 0; i < edgeCount; i++)
     {
-        edge* currentEdge = queue->extractMin();
+        graphNode* currentEdge = queue->extractMin();
         //cout << "Extracted " << currentEdge->u << " " << currentEdge->v << " " << currentEdge->weight << endl;
 
         if (findSet(currentEdge->u) != findSet(currentEdge->v))
@@ -134,30 +212,58 @@ void Graph::MSTKruskal(edge** result, double& totalWeight, int& numEdgesFound)
         }
     }
 
+}
 
-    for (int j = 1; j < numEdgesFound; j++)
+void Graph::MSTPrim(graphNode** edges, double& totalWeight, int& totalEdges)
+{
+    Graph::MinPriorityQueue* queue = new Graph::MinPriorityQueue(vertCount);
+    graphNode** vertices = new graphNode * [vertCount];
+
+    for (int i = 0; i < vertCount; i++)
     {
-        edge* key = result[j];
-        int i = j - 1;
-        while (i >= 0 && result[i]->v > key->v)
+        graphNode* uVert = new graphNode();
+        uVert->name = verts[i];
+        uVert->parent = "";
+        uVert->key = DBL_MAX;
+        if (i == 0)
+            uVert->key = 0;
+        vertices[i] = uVert;
+        queue->insert(uVert);
+    }
+    
+    int vertsAdded = 0;
+    while (!queue->isEmpty())
+    {
+        vertsAdded++;
+        graphNode* u = queue->extractMin();
+        
+        int adjCount = 0;
+        string* adj = get_adjacent(u->name, adjCount);
+        
+        for (int i = 0; i < adjCount; i++)
         {
-            result[i + 1] = result[i];
-            i = i - 1;
+            graphNode* v = vertices[getVertIndex(adj[i])];
+            if (queue->contains(v) && getEdgeWeight(u->name, v->name) < v->key)
+            {
+                v->parent = u->name;
+                v->key = getEdgeWeight(u->name, v->name);
+            }
+            
         }
-        result[i + 1] = key;
+
+        if (vertsAdded > 1)
+        {
+            graphNode* addEdge = new graphNode();
+            string uName = getVertIndex(u->name) < getVertIndex(u->parent) ? u->name : u->parent;
+            string vName = getVertIndex(u->name) < getVertIndex(u->parent) ? u->parent : u->name;
+            addEdge->u = uName;
+            addEdge->v = vName;
+            totalWeight += getEdgeWeight(u->name, u->parent);
+            edges[totalEdges++] = addEdge;
+        }
+
     }
 
-    for (int j = 1; j < numEdgesFound; j++)
-    {
-        edge* key = result[j];
-        int i = j - 1;
-        while (i >= 0 && result[i]->u > key->u)
-        {
-            result[i + 1] = result[i];
-            i = i - 1;
-        }
-        result[i + 1] = key;
-    }
 }
 
 void Graph::makeSet(string vert)
@@ -226,31 +332,47 @@ void Graph::debugSets()
 
 Graph::MinPriorityQueue::MinPriorityQueue(int size)
 {
-    A = new edge*[size + 1];
+    A = new graphNode*[size + 1];
     heapSize = 0;
-    edge* emptyEdge = new edge();
+    graphNode* emptyEdge = new graphNode();
     emptyEdge->u = " ";
     emptyEdge->v = " ";
-    emptyEdge->weight = -1;
+    emptyEdge->key = -1;
     A[0] = emptyEdge;
 }
 
-void Graph::MinPriorityQueue::insert(Graph::edge* e)
+bool Graph::MinPriorityQueue::isEmpty() {
+    if (heapSize < 1)
+        return true;
+    else
+        return false;
+}
+
+bool Graph::MinPriorityQueue::contains(graphNode* e)
+{
+    for (int i = 1; i <= heapSize; i++)
+    {
+        if (A[i] == e)
+            return true;
+    }
+    return false;
+}
+void Graph::MinPriorityQueue::insert(Graph::graphNode* e)
 {
     heapSize++;
     decreaseKey(heapSize, e);
 }
 
-void Graph::MinPriorityQueue::decreaseKey(int indx, Graph::edge* key)
+void Graph::MinPriorityQueue::decreaseKey(int indx, Graph::graphNode* key)
 {
     int i = indx;
     A[indx] = key;
     //if (key->weight < A[indx]->weight)
     //    return;
-    while ((i > 1) && (A[parent(i)]->weight > A[i]->weight))
+    while ((i > 1) && (A[parent(i)]->key > A[i]->key))
     {
         // Swap A[i] with A[parent]
-        edge* tmp = A[i];
+        graphNode* tmp = A[i];
         A[i] = A[parent(i)];
         A[parent(i)] = tmp;
 
@@ -258,11 +380,12 @@ void Graph::MinPriorityQueue::decreaseKey(int indx, Graph::edge* key)
     }
 }
 
-Graph::edge* Graph::MinPriorityQueue::extractMin()
+Graph::graphNode* Graph::MinPriorityQueue::extractMin()
 {
     //if (heapSize < 1)
     //    return new edge();
-    edge* min = A[1];
+    minHeapify(1);
+    graphNode* min = A[1];
     A[1] = A[heapSize];
     heapSize--;
     minHeapify(1);
@@ -273,7 +396,7 @@ void Graph::MinPriorityQueue::debugDisplay()
 {
     for (int i = 0; i <= heapSize; i++)
     {
-        cout << "A[" << i << "]= " << A[i]->weight << endl;
+        cout << "A[" << i << "]= " << A[i]->name << " " <<  A[i]->key << endl;
     }
 }
 
@@ -283,16 +406,16 @@ void Graph::MinPriorityQueue::minHeapify(int indx)
     int r = rightChild(indx);
 
     int smallest;
-    if ((l <= heapSize) && (A[l]->weight < A[indx]->weight))
+    if ((l <= heapSize) && (A[l]->key < A[indx]->key))
         smallest = l;
     else
         smallest = indx;
-    if ((r <= heapSize) && (A[r]->weight < A[smallest]->weight))
+    if ((r <= heapSize) && (A[r]->key < A[smallest]->key))
         smallest = r;
     if (smallest != indx)
     { 
         // Swap A[i] with A[smallest]
-        edge* tmp = A[indx];
+        graphNode* tmp = A[indx];
         A[indx] = A[smallest];
         A[smallest] = tmp;
 

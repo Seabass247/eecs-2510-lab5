@@ -15,6 +15,7 @@ int main(int argc, char* argv[])
     string inputFilename = (string)argv[1];
     Graph* graph = new Graph(inputFilename);
     graph->displayMSTKruskal();
-
+    cout << "-------------------------------------------" << endl;
+    graph->displayMSTPrim();
 }
 
