@@ -79,6 +79,7 @@ Graph::Graph(string inputFileName)
 
 void Graph::displayMSTKruskal()
 {
+    cout << "Kruskal" << endl;
     graphNode** result = new graphNode*[edgeCount];
     double totalWeight = 0;
     int numEdgesFound = 0;
@@ -216,6 +217,7 @@ void Graph::MSTKruskal(graphNode** result, double& totalWeight, int& numEdgesFou
 
 void Graph::MSTPrim(graphNode** edges, double& totalWeight, int& totalEdges)
 {
+    cout << "Prim" << endl;
     Graph::MinPriorityQueue* queue = new Graph::MinPriorityQueue(vertCount);
     graphNode** vertices = new graphNode * [vertCount];
 
