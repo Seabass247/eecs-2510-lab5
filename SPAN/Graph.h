@@ -1,3 +1,11 @@
+// Graph.h
+// By Sebastian Hamel
+// For EECS 2510, Spring 2020
+// Written 05/02/2020
+// A header file for the Graph class.  Specifies the interface of Graph, which the main function 
+// interacts with to get and display the MST of a graph parsed from the file passed in Main.  
+// Contains all of its method and member variable declarations.
+
 #pragma once
 #include <string>
 using namespace std;

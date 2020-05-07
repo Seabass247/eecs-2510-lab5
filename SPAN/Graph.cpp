@@ -1,3 +1,12 @@
+// Graph.cpp
+// By Sebastian Hamel
+// For EECS 2510, Spring 2020
+// Written 05/02/2020
+// The implementation of "Graph" which supports reading in a specifically formatted file contains a graph represented by
+// a weight matrix.  Graph parses the weights into distinct edges, which enables the Prim and Kruskal algorithms to
+// perform operations on said edges to obtain the graph's Minimum Spanning Tree, MST.  The MST is displayed for both 
+// Prim and Kruskal by printing each edge by its u-v vertices and respective weight.
+
 #include "Graph.h"
 #include <fstream>
 #include <iostream>
@@ -23,7 +32,6 @@ Graph::Graph(string inputFileName)
         verts[i] = nodeName;
     }
 
-    //cout << nodeCount << endl;
     double** weights = new double*[nodeCount];
     double weight;
     for (int i = 0; i < nodeCount; i++) // process input matrix rows
@@ -32,11 +40,9 @@ Graph::Graph(string inputFileName)
         for (int j = 0; j < nodeCount; j++) // process input matrix columns
         {
             inputFile >> weight;
-            //cout << weight << " ";
             vert_row[j] = weight;
         }
-        weights[i] = vert_row; // make this row point to all values in th row
-        //cout << endl;
+        weights[i] = vert_row; // make this row point to all values in i-th row
     }
 
     this->weights = weights;
@@ -49,6 +55,7 @@ Graph::Graph(string inputFileName)
     int maxNumEdges = (nodeCount * nodeCount - nodeCount) / 2;
     graphNode** edges = new graphNode*[maxNumEdges];
 
+    // Parse the weight matrix into distinct edges that can be iterated over in operations for Prim and Kruskal
     int edgeCount = 0;
     for (int i = 0; i < this->vertCount; i++)
     {
@@ -85,6 +92,7 @@ void Graph::displayMSTKruskal()
     int numEdgesFound = 0;
     MSTKruskal(result, totalWeight, numEdgesFound);
 
+    // Sort the edges by their second vertex name as the key (v)
     for (int j = 1; j < numEdgesFound; j++)
     {
         graphNode* key = result[j];
@@ -97,6 +105,7 @@ void Graph::displayMSTKruskal()
         result[i + 1] = key;
     }
 
+    // Sort the edges by their first vertex name as the key (u)
     for (int j = 1; j < numEdgesFound; j++)
     {
         graphNode* key = result[j];
@@ -109,6 +118,7 @@ void Graph::displayMSTKruskal()
         result[i + 1] = key;
     }
 
+    // Display the total weight followed by the sorted edges and their respective weights
     cout << totalWeight << endl;
     for (int i = 0; i < numEdgesFound; i++)
     {
@@ -126,6 +136,7 @@ void Graph::displayMSTPrim()
     int numEdgesFound = 0;
     MSTPrim(result, totalWeight, numEdgesFound);
     
+    // Sort the edges by their second vertex name as the key (v)
     for (int j = 1; j < numEdgesFound; j++)
     {
         graphNode* key = result[j];
@@ -138,6 +149,7 @@ void Graph::displayMSTPrim()
         result[i + 1] = key;
     }
 
+    // Sort the edges by their first vertex name as the key (u)
     for (int j = 1; j < numEdgesFound; j++)
     {
         graphNode* key = result[j];
@@ -150,6 +162,7 @@ void Graph::displayMSTPrim()
         result[i + 1] = key;
     }
 
+    // Display the total weight followed by the sorted edges and their respective weights
     cout << totalWeight << endl;
     for (int i = 0; i < numEdgesFound; i++)
     {
@@ -196,14 +209,12 @@ void Graph::MSTKruskal(graphNode** result, double& totalWeight, int& numEdgesFou
     for (int i = 0; i < edgeCount; i++)
     {
         graphNode* currentEdge = edges[i];
-        //cout << "INSERT EDGE " << i << " = " << currentEdge->u << "-" << currentEdge->v << " " << currentEdge->weight << endl;
         queue->insert(currentEdge);
     }
     
     for (int i = 0; i < edgeCount; i++)
     {
         graphNode* currentEdge = queue->extractMin();
-        //cout << "Extracted " << currentEdge->u << " " << currentEdge->v << " " << currentEdge->weight << endl;
 
         if (findSet(currentEdge->u) != findSet(currentEdge->v))
         {
@@ -325,7 +336,6 @@ void Graph::debugSets()
         while (P != nullptr)
         {
             cout << P->vert << " ";
-            //cout << P->vert << " = " << P->vert << "->Next =" << P->next << endl;
             P = P->next;
         }
         cout << endl;
